@@ -644,7 +644,7 @@
     #introVideo{
         width:100%;
         height:100%;
-        object-fit:cover;
+        object-fit:fill;
         display:block;
     }
     #skipIntroButton{
@@ -674,9 +674,17 @@
         width:100%;
         height:100%;
         background-image:linear-gradient(135deg,rgba(3,10,20,.25),rgba(0,217,255,.12)),url("Scene2-splashscreen.jpg");
-        background-size:cover;
-        background-position:center;
-        background-repeat:no-repeat;
+        background-image:
+            linear-gradient(
+                135deg,
+                rgba(3,10,20,.25),
+                rgba(0,217,255,.12)
+            ),
+            url("Scene2-splashscreen.jpg");
+
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
         display:none;
         align-items:flex-end;
         justify-content:center;
@@ -698,7 +706,7 @@
     #welcomeScreen img{
         width:100%;
         height:100%;
-        object-fit:cover;
+        object-fit:fill;
         display:block;
     }
 
@@ -1759,92 +1767,6 @@
 
 </style>
 
-<style>
-/* PATCH RESPONSIVE - tambahkan di bagian paling bawah index.html */
-
-/* Gambar/video tampil utuh, tidak dipotong */
-#introVideo,
-#welcomeScreen img {
-    object-fit: contain !important;
-    background: #02060b;
-}
-
-/* Ukuran modal mengikuti layar tablet/HP */
-.modal-box {
-    width: min(94vw, 1100px) !important;
-    height: min(90dvh, 850px) !important;
-    max-height: 90dvh !important;
-    overflow-y: auto !important;
-}
-
-/* Area gambar rak tidak memaksa tinggi 520px */
-.tools-grid {
-    min-height: 0 !important;
-}
-
-.rack-preview {
-    min-height: clamp(260px, 55dvh, 520px) !important;
-}
-
-#toolViewer {
-    height: clamp(280px, 58dvh, 520px) !important;
-}
-
-@media (max-width: 1200px) {
-    .tools-grid,
-    .detail-layout {
-        grid-template-columns: minmax(0, 1fr) !important;
-    }
-
-    .tools-list {
-        max-height: 40dvh !important;
-        min-height: 0 !important;
-    }
-}
-
-@media (max-width: 900px) {
-    .modal-box {
-        width: calc(100vw - 24px) !important;
-        max-width: calc(100vw - 24px) !important;
-        height: calc(100dvh - 24px) !important;
-        max-height: calc(100dvh - 24px) !important;
-        padding: 14px !important;
-    }
-
-    .tool-item {
-        min-width: 0;
-        gap: 10px;
-        padding: 10px;
-    }
-
-    .tool-item-info {
-        min-width: 0;
-    }
-
-    .tool-item-info h3,
-    .tool-item-info p,
-    .tool-item-info span {
-        overflow-wrap: anywhere;
-    }
-
-    .object-view-image-frame {
-        height: min(340px, 38dvh) !important;
-        min-height: 180px;
-    }
-}
-
-@media (max-width: 600px) {
-    .object-view-image-frame {
-        height: 240px !important;
-    }
-
-    .tool-item-image {
-        width: 64px;
-        height: 64px;
-        flex-basis: 64px;
-    }
-}
-</style>
 </head>
 <body>
 <div id="introVideoScreen" aria-label="Video pembuka">
@@ -1883,7 +1805,7 @@
         #introVideo{
             width:100%;
             height:100%;
-            object-fit:cover;
+            object-fit:fill;
             display:block;
         }
 
@@ -6373,7 +6295,7 @@ function init(){
     sceneContainer.style.backgroundImage =
         'url("Scene3-workshop.jpg")';
 
-    sceneContainer.style.backgroundSize = "cover";
+    sceneContainer.style.backgroundSize = "contain";
     sceneContainer.style.backgroundPosition = "center";
     sceneContainer.style.backgroundRepeat = "no-repeat";
 
@@ -8797,3 +8719,31 @@ document.addEventListener("fullscreenchange",function(){
 
 </body>
 </html>
+
+<style>
+/* FINAL FULL FRAME: sama seperti gambar pada quiz */
+#welcomeScreen { background-size: 100
+<style>
+#welcomeScreen {
+    background-size: contain !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+}
+
+#scene {
+    background-size: contain !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-color: #080f18 !important;
+}
+
+#scene::before {
+    background-size: contain !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    transform: none !important;
+}
+
+#introVideo { object-fit: fill !important; }
+:fullscreen #scene, :-webkit-full-screen #scene { width: 100vw !important; height: 100vh !important; }
+</style>
