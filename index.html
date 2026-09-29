@@ -4258,7 +4258,7 @@ const objects = [
     
 
     {
-        name: "AC recyle machine",
+        name: "AC recycle machine",
 
 
         images: {
@@ -4278,7 +4278,7 @@ const objects = [
         height: 16
     },
     {
-        name: "Tier Changer",
+        name: "Tire Changer Machine",
         images: {
             top:   "assets/tire_changer_tampak_atas.png",
             front: "assets/tire_changer_tampak_depan.png",
@@ -4295,7 +4295,7 @@ const objects = [
         height: 15
     },
     {
-        name: "Wheel Balancer",
+        name: "Wheel Balancer Machine",
         images: {
             top:   "assets/wheel_balancer_tampak_atas.png",
             front: "assets/wheel_balancer_tampak_depan.png",
@@ -4334,7 +4334,7 @@ const objects = [
         height: 15
     },
     {
-        name: "Battery changer",
+        name: "Battery Charger Machine",
 
         images: {
             top:   "assets/battery_charger_tampak_atas.png",
@@ -4349,7 +4349,7 @@ const objects = [
         height: 15
     },
     {
-        name: "Press Hydraulic",
+        name: "Press Hydraulic Machine",
 
         images: {
             top:   "assets/hydraulic_pressure_machine_tampak_atas.png",
@@ -4367,7 +4367,7 @@ const objects = [
         height: 25
     },
     {
-        name: "ATF Changer",
+        name: "ATF Changer Machine",
 
         images: {
             top:   "assets/ac_recycle_tampak_atas.png",
@@ -4379,7 +4379,7 @@ const objects = [
         // DEFAULT
         defaultView: "front",
         description: "mengganti mata potong atau perkakas secara otomatis tanpa bantuan manual dari operator",
-        x: 92,
+        x: 90,
         y: 65,
         width: 4,
         height: 16
@@ -4393,7 +4393,7 @@ const objects = [
         height: 15
     },
     {
-        name: "Air Compressor",
+        name: "Air Compressor Machine",
         images: {
             top:   "assets/air_compressor_tampak_atas.png",
             front: "assets/air_compressor_tampak_depan.png",
@@ -4410,7 +4410,7 @@ const objects = [
         height: 10
     },
     {
-        name: "Dongkrak Hydrolik Jack",
+        name: "Dongkrak Hidrolik Jack",
         images: {
             top:   "assets/hydraulic_jack_tampak_atas.png",
             front: "assets/hydraulic_jack_tampak_depan.png",
@@ -4429,7 +4429,7 @@ const objects = [
         height: 6
     },    
     {
-        name: "Air Hose Reeis",
+        name: "Air Hose Reels",
 
         images: {
             top:   "assets/air_hose_reel_tampak_atas.png",
@@ -4450,7 +4450,7 @@ const objects = [
         height: 6
     },
     {
-        name: "Air Hose Reeis",
+        name: "Air Hose Reels",
 
         images: {
             top:   "assets/air_hose_reel_tampak_atas.png",
@@ -4468,7 +4468,7 @@ const objects = [
         height: 6
     },
     {
-        name: "Air Hose Reeis",
+        name: "Air Hose Reels",
 
         images: {
             top:   "assets/air_hose_reel_tampak_atas.png",
@@ -4486,7 +4486,7 @@ const objects = [
         height: 6
     },
     {
-        name: "Air Hose Reeis",
+        name: "Air Hose Reels",
 
         images: {
             top:   "assets/air_hose_reel_tampak_atas.png",
@@ -4675,9 +4675,7 @@ window.startQuiz = function(){
 function stopWorkshopEducation() {
 
     /* STOP SPEECH */
-    if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-    }
+    if (typeof stopWorkshopAudio === "function") stopWorkshopAudio();
 
     /* STOP EDUKASI BERURUTAN */
     sequentialRunning = false;
@@ -4742,9 +4740,7 @@ window.startIdentifikasi = function(){
     sequentialRunning = false;
 
     /* STOP SUARA */
-    if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-    }
+    if (typeof stopWorkshopAudio === "function") stopWorkshopAudio();
 
     /* Hentikan timer */
     if (sequentialTimer) {
@@ -5307,22 +5303,8 @@ function checkQuizAnswer(
 }
 
 function speakQuizFeedback(text){
-
-    if(!("speechSynthesis" in window)) return;
-
-    speechSynthesis.cancel();
-
-    const speech = new SpeechSynthesisUtterance(text);
-
-    speech.lang = "id-ID";
-    speech.rate = .9;
-    speech.pitch = .82;
-    speech.volume = 1;
-
-    const maleVoice = getMaleVoice("id-ID");
-    if(maleVoice) speech.voice = maleVoice;
-
-    speechSynthesis.speak(speech);
+    // Feedback kuis juga menggunakan MP3; tidak ada lagi SpeechSynthesis.
+    playWorkshopAudio({ name: text, audioFile: text.replace(/[!?.]+$/g, "") + ".mp3" });
 }
 
 
@@ -5575,151 +5557,80 @@ function showObjectsSequentially() {
     showNextObject();
 
 }
-function getMaleVoice(lang){
+/* =====================================================
+   AUDIO MP3 SERAGAM
+===================================================== */
+let workshopAudio = null;
+let currentAudioFile = "";
 
-    const voices = window.speechSynthesis.getVoices();
+const AUDIO_FILE_OVERRIDES = {
+    "ac recycle machine": "AC-recycle machine.mp3",
+    "Air Compressor Machine": "Air Compressor Machine.mp3"
+};
 
-    const prefix = lang.toLowerCase().split("-")[0];
-
-    // ========================================
-    // KHUSUS BAHASA YANG DIMINTA
-    // ========================================
-
-    const langVoices = voices.filter(v =>
-        v.lang &&
-        v.lang.toLowerCase().startsWith(prefix)
-    );
-
-    console.log(
-        "🔊 VOICE",
-        lang,
-        langVoices.map(v => v.name + " | " + v.lang)
-    );
-
-
-    // ========================================
-    // CARI VOICE COWOK
-    // ========================================
-
-    const maleKeywords = [
-        "male",
-        "man",
-        "david",
-        "mark",
-        "george",
-        "daniel",
-        "guy",
-        "ryan",
-        "alex"
-    ];
-
-    const maleVoice = langVoices.find(v => {
-
-        const name = v.name.toLowerCase();
-
-        return maleKeywords.some(keyword =>
-            name.includes(keyword)
-        );
-    });
-
-
-    // JANGAN LANGSUNG AMBIL VOICE PERTAMA
-    if(maleVoice){
-        return maleVoice;
+function audioFileCandidates(itemOrName){
+    const item = typeof itemOrName === "string" ? { name: itemOrName } : (itemOrName || {});
+    const name = String(item.name || "").trim();
+    const override = item.audioFile || AUDIO_FILE_OVERRIDES[name.toLowerCase()];
+    const candidates = [];
+    if (override) candidates.push(override);
+    if (name) {
+        candidates.push(name + ".mp3");
+        candidates.push(name.replace(/\s+/g, "-") + ".mp3");
     }
-
-    // Daftar voice berbeda-beda tiap browser/OS. Gunakan voice berbahasa
-    // sama sebagai fallback agar pelafalan tetap sesuai logat yang dipilih.
-    const knownMale = /male|man|david|mark|daniel|alex|guy|jorge|diego|ruben|george|ryan/i;
-
-    // Jangan memakai voice pertama karena pada banyak browser voice pertama
-    // untuk id-ID adalah voice perempuan.
-    const sameLanguageMale = langVoices.find(v => knownMale.test(v.name));
-    if(sameLanguageMale) return sameLanguageMale;
-
-    // Jangan memakai voice dari bahasa lain. Voice Inggris untuk teks
-    // Indonesia membuat pelafalan menjadi kacau. Jika voice pria id-ID tidak
-    // tersedia, gunakan voice id-ID apa pun agar logat Indonesianya tetap benar.
-    return langVoices[0] || null;
+    return [...new Set(candidates)].map(file => "./assets/voice-workshop/" + file);
 }
 
+function ensureWorkshopAudio(){
+    if (!workshopAudio) {
+        workshopAudio = document.createElement("audio");
+        workshopAudio.id = "workshopMp3Audio";
+        workshopAudio.preload = "auto";
+        workshopAudio.setAttribute("aria-hidden", "true");
+        workshopAudio.style.display = "none";
+        document.body.appendChild(workshopAudio);
+    }
+    return workshopAudio;
+}
+
+function stopWorkshopAudio(){
+    const audio = ensureWorkshopAudio();
+    audio.pause();
+    audio.currentTime = 0;
+    audio.onended = null;
+    audio.onerror = null;
+    currentAudioFile = "";
+}
+
+function playWorkshopAudio(itemOrName){
+    const candidates = audioFileCandidates(itemOrName);
+    if (!candidates.length) return null;
+
+    const audio = ensureWorkshopAudio();
+    stopWorkshopAudio();
+    let candidateIndex = 0;
+    const tryNext = () => {
+        if (candidateIndex >= candidates.length) {
+            console.warn("MP3 tidak ditemukan untuk:", itemOrName?.name || itemOrName, candidates);
+            audio.onerror = null;
+            return;
+        }
+        const src = candidates[candidateIndex++];
+        currentAudioFile = src;
+        audio.src = src;
+        audio.load();
+        audio.play().catch(error => {
+            console.warn("MP3 belum dapat diputar:", src, error);
+        });
+    };
+    audio.onerror = tryNext;
+    tryNext();
+    return audio;
+}
 
 function speakObjectDescription(obj){
-
-    if(!obj || !("speechSynthesis" in window)) return null;
-
-    window.speechSynthesis.cancel();
-
-
-    // ========================================
-    // NAME
-    // ENGLISH + COWOK
-    // ========================================
-
-    const nameSpeech = new SpeechSynthesisUtterance(
-        obj.name
-    );
-
-    nameSpeech.lang = "en-US";
-    nameSpeech.rate = 0.9;
-    nameSpeech.pitch = .82;
-    nameSpeech.volume = 1;
-
-    const englishVoice = getMaleVoice("en-US");
-
-    if(englishVoice){
-        nameSpeech.voice = englishVoice;
-    }
-
-
-    // ========================================
-    // DESCRIPTION
-    // INDONESIA + COWOK
-    // ========================================
-
-    const descSpeech = new SpeechSynthesisUtterance(
-        obj.description
-    );
-
-    descSpeech.lang = "id-ID";
-    descSpeech.rate = 0.9;
-    descSpeech.pitch = .82;
-    descSpeech.volume = 1;
-
-    const indonesiaVoice = getMaleVoice("id-ID");
-
-    if(indonesiaVoice){
-        descSpeech.voice = indonesiaVoice;
-    }
-
-
-    console.log(
-        "🎙️ NAME:",
-        englishVoice
-            ? englishVoice.name + " | " + englishVoice.lang
-            : "VOICE ENGLISH COWOK TIDAK DITEMUKAN"
-    );
-
-    console.log(
-        "🎙️ DESCRIPTION:",
-        indonesiaVoice
-            ? indonesiaVoice.name + " | " + indonesiaVoice.lang
-            : "VOICE INDONESIA COWOK TIDAK DITEMUKAN"
-    );
-
-
-    // ========================================
-    // PLAY
-    // ========================================
-
-    window.speechSynthesis.speak(nameSpeech);
-    window.speechSynthesis.speak(descSpeech);
-
-
-    return {
-        utterance: descSpeech,
-        text: obj.description
-    };
+    if(!obj) return null;
+    return { audio: playWorkshopAudio(obj), text: obj.description };
 }
 
 function showNextObject(){
@@ -5865,13 +5776,12 @@ function showNextObject(){
         },600);
     };
 
-    if(narration){
-        // Jangan pindah sebelum seluruh nama dan deskripsi selesai dibacakan.
-        narration.utterance.onend = () => {
+    if(narration && narration.audio){
+        // Jangan pindah sebelum MP3 objek selesai diputar.
+        narration.audio.onended = () => {
             setTimeout(finishObject, 700);
         };
     }else{
-        // Fallback bila browser tidak mendukung Speech Synthesis.
         setTimeout(finishObject, 3000);
     }
 }
@@ -6250,9 +6160,7 @@ function initWorkshopObjectHotspots() {
         if (!event.target.closest(".workshop-hotspot")) {
 
             /* STOP SUARA SAAT POPUP DITUTUP */
-            if ("speechSynthesis" in window) {
-                window.speechSynthesis.cancel();
-            }
+            if (typeof stopWorkshopAudio === "function") stopWorkshopAudio();
 
             caption.style.display = "none";
             svg.innerHTML = "";
@@ -6263,9 +6171,7 @@ function initWorkshopObjectHotspots() {
         if (event.key === "Escape") {
 
             /* STOP SUARA */
-            if ("speechSynthesis" in window) {
-                window.speechSynthesis.cancel();
-            }
+            if (typeof stopWorkshopAudio === "function") stopWorkshopAudio();
 
             caption.style.display = "none";
             svg.innerHTML = "";
@@ -6485,53 +6391,23 @@ new THREE.PointLight(
 }
 
 function getToolSpeechText(tool) {
-    return `
-        ${tool.name}.
-        Kategori ${tool.category}.
-        Merek ${tool.brand}.
-        Kode produk ${tool.code}.
-        Ukuran ${tool.size}.
-        Berat ${tool.weight}.
-        Material ${tool.material}.
-        Deskripsi: ${tool.description}.
-        Kegunaan: ${tool.use}.
-    `.replace(/\s+/g, " ").trim();
+    return tool?.description || "";
 }
 
 function speakTool(tool = currentTool) {
-    if (!tool || !("speechSynthesis" in window)) {
-        alert("Browser ini belum mendukung fitur suara.");
-        return;
-    }
+    if (!tool) return;
+    const audio = playWorkshopAudio(tool);
+    if (!audio) return;
 
-    window.speechSynthesis.cancel();
-
-    const nameSpeech = new SpeechSynthesisUtterance(tool.name || "Tool");
-    nameSpeech.lang = tool.voiceNameLang || "en-US";
-    nameSpeech.rate = .86;
-    nameSpeech.pitch = .82;
-    nameSpeech.volume = 1;
-    const toolNameVoice = getMaleVoice(nameSpeech.lang);
-    if (toolNameVoice) nameSpeech.voice = toolNameVoice;
-
-    currentSpeech = new SpeechSynthesisUtterance(getToolSpeechText(tool));
-    currentSpeech.lang = "id-ID";
-    currentSpeech.rate = .9;
-    currentSpeech.pitch = .82;
-    currentSpeech.volume = 1;
-    const indonesianVoice = getMaleVoice("id-ID");
-    if (indonesianVoice) currentSpeech.voice = indonesianVoice;
-
-    currentSpeech.onstart = function () {
+    audio.onplay = function () {
         isSpeaking = true;
         const button = document.getElementById("voiceButton");
         if (button) {
-            button.textContent = "⏸ Sedang Membacakan...";
+            button.textContent = "⏸ Sedang Memutar...";
             button.classList.add("speaking");
         }
     };
-
-    currentSpeech.onend = function () {
+    audio.onended = function () {
         isSpeaking = false;
         const button = document.getElementById("voiceButton");
         if (button) {
@@ -6539,31 +6415,26 @@ function speakTool(tool = currentTool) {
             button.classList.remove("speaking");
         }
     };
-
-    window.speechSynthesis.speak(nameSpeech);
-    window.speechSynthesis.speak(currentSpeech);
 }
 
 function toggleToolVoice() {
     if (!currentTool) return;
-
-    if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.pause();
+    const audio = ensureWorkshopAudio();
+    if (audio.src && !audio.paused) {
+        audio.pause();
+        isSpeaking = false;
         return;
     }
-
-    if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
+    if (audio.src && audio.currentTime > 0 && audio.currentTime < audio.duration) {
+        audio.play().catch(() => {});
         return;
     }
-
     speakTool(currentTool);
 }
 
 function stopToolVoice() {
-    window.speechSynthesis.cancel();
+    stopWorkshopAudio();
     isSpeaking = false;
-
     const button = document.getElementById("voiceButton");
     if (button) {
         button.textContent = "🔊 Dengarkan Penjelasan";
@@ -8591,11 +8462,7 @@ document.addEventListener("fullscreenchange",function(){
 <script>
 
     function stopWorkshopSpeech() {
-        if ("speechSynthesis" in window) {
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.pause();
-            window.speechSynthesis.cancel();
-        }
+        stopWorkshopAudio();
     }
 
 
@@ -8614,16 +8481,11 @@ document.addEventListener("fullscreenchange",function(){
       return { q:showImage ? `Alat apakah yang ditunjukkan pada gambar ini?` : `Manakah nama alat yang tepat berdasarkan materi workshop?`, image:showImage ? fallbackImage(tool) : null, a:answers, c:answers.indexOf(tool.name), tool:tool.name };
     });
   }
-  window.speakToolName = function(name, lang='en-US'){
-    if(!name || !('speechSynthesis' in window)) return;
-    speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(name); u.lang=lang; u.rate=.86; u.pitch=.82; u.volume=1;
-    const voices=speechSynthesis.getVoices(); const prefix=lang.toLowerCase().split('-')[0]; const v=voices.find(x=>x.lang&&x.lang.toLowerCase().startsWith(prefix)&&/male|david|mark|daniel|alex|guy|george|ryan/i.test(x.name)) || voices.find(x=>x.lang&&x.lang.toLowerCase().startsWith(prefix)); if(v) u.voice=v; speechSynthesis.speak(u);
+  window.speakToolName = function(name){
+    if(!name) return;
+    playWorkshopAudio(name);
   };
-  window.speakToolNameIndonesian = function(name){
-    if(!name || !('speechSynthesis' in window)) return;
-    speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(name); u.lang='id-ID'; u.rate=.88; u.pitch=.82; u.volume=1;
-    const voices=speechSynthesis.getVoices(); const idVoices=voices.filter(x=>/^id(-|_)?/i.test(x.lang)); const male=/male|man|david|daniel|alex|guy|pria|mark|george|ryan/i; const v=idVoices.find(x=>male.test(x.name)) || idVoices[0]; if(v) u.voice=v; speechSynthesis.speak(u);
-  };
+  window.speakToolNameIndonesian = window.speakToolName;
   window.showSceneInstruction = function(title, text) {
     const scene = document.getElementById("scene");
 
@@ -8677,9 +8539,7 @@ document.addEventListener("fullscreenchange",function(){
 
     window.goHome = function(){
 
-        if ('speechSynthesis' in window) {
-            speechSynthesis.cancel();
-        }
+        if (typeof stopWorkshopAudio === "function") stopWorkshopAudio();
 
         // Tutup semua modal
         document
