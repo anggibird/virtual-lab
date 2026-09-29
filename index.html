@@ -2653,6 +2653,22 @@
         });
 
         updateSoundButton();
+
+        introVideo.addEventListener("play", function(){
+            setBackgroundMusicDucked(true);
+        });
+        introVideo.addEventListener("pause", function(){
+            setBackgroundMusicDucked(false);
+        });
+        welcomeAudio.addEventListener("play", function(){
+            setBackgroundMusicDucked(true);
+        });
+        welcomeAudio.addEventListener("pause", function(){
+            setBackgroundMusicDucked(false);
+        });
+        welcomeAudio.addEventListener("ended", function(){
+            setBackgroundMusicDucked(false);
+        });
     </script>
 
 </div>
@@ -2674,9 +2690,36 @@
 
 </div>
 
+<audio id="backgroundMusic" autoplay loop preload="auto" aria-label="Backsound workshop">
+    <source src="./assets/backsound.mp3" type="audio/mpeg">
+</audio>
+
 <script>
 const welcomeScreen = document.getElementById("welcomeScreen");
 const welcomeAudio = document.getElementById("welcomeAudio");
+const backgroundMusic = document.getElementById("backgroundMusic");
+
+const BACKSOUND_NORMAL_VOLUME = 0.1;
+const BACKSOUND_DUCKED_VOLUME = 0.01;
+
+function setBackgroundMusicDucked(isDucked){
+    if (!backgroundMusic) return;
+    backgroundMusic.volume = isDucked
+        ? BACKSOUND_DUCKED_VOLUME
+        : BACKSOUND_NORMAL_VOLUME;
+}
+
+function playBackgroundMusic(){
+    if (!backgroundMusic) return;
+    setBackgroundMusicDucked(false);
+    backgroundMusic.muted = false;
+    backgroundMusic.play().catch(function(error){
+        console.warn("Autoplay backsound diblokir browser:", error);
+    });
+}
+
+playBackgroundMusic();
+document.addEventListener("pointerdown", playBackgroundMusic, { once: true });
 
 // Coba putar audio splash otomatis saat halaman pertama kali dibuka.
 if (welcomeAudio) {
@@ -2695,16 +2738,16 @@ window.startIntroVideo = function(){
 
     if (!welcome || !introScreen || !introVideo) return;
 
-    // Putar suara tombol START dari splash screen.
+    // Saat START diklik, suara welcome dimatikan dan tidak diputar ulang.
     if (welcomeAudio) {
         welcomeAudio.pause();
         welcomeAudio.currentTime = 0;
-        welcomeAudio.muted = false;
-        welcomeAudio.volume = 1;
-        welcomeAudio.play().catch(function(error){
-            console.warn("Audio tombol START tidak dapat diputar:", error);
-        });
+        welcomeAudio.muted = true;
+        welcomeAudio.volume = 0;
     }
+
+    // Backsound mengecil selama video pembuka berjalan.
+    setBackgroundMusicDucked(true);
 
     welcome.classList.remove("is-visible");
     welcome.style.display = "none";
@@ -2976,6 +3019,16 @@ async function showWelcomeScreen(playAudio = true) {
 
         </button>
 
+        <button class="menu-card quiz-card" onclick="openK3Quiz()">
+            <div class="menu-number">05</div>
+            <div class="menu-icon">🦺</div>
+            <div class="menu-content">
+                <div class="menu-name">KUIS K3</div>
+                <div class="menu-description">Keselamatan dan kesehatan kerja bengkel</div>
+            </div>
+            <div class="menu-arrow">›</div>
+        </button>
+
     </div>
 
 </div>
@@ -3176,6 +3229,7 @@ async function showWelcomeScreen(playAudio = true) {
         introClosed = true;
 
         introVideo.pause();
+        setBackgroundMusicDucked(false);
         introScreen.classList.add("is-hidden");
         introScreen.style.display = "none";
 
@@ -5539,7 +5593,7 @@ function audioFileCandidates(itemOrName){
 
     // Nama MP3 harus sama persis dengan nilai `name`.
     // Contoh: name "Engine Crane" -> "./assets/Engine Crane.mp3"
-    return name ? ["./assets/voice-workshop/" + name + ".mp3"] : [];
+    return name ? ["./assets/" + name + ".mp3"] : [];
 }
 
 function ensureWorkshopAudio(){
@@ -5556,6 +5610,7 @@ function ensureWorkshopAudio(){
 
 function stopWorkshopAudio(){
     const audio = ensureWorkshopAudio();
+    setBackgroundMusicDucked(false);
     audio.pause();
     audio.currentTime = 0;
     audio.onended = null;
@@ -5569,10 +5624,12 @@ function playWorkshopAudio(itemOrName){
 
     const audio = ensureWorkshopAudio();
     stopWorkshopAudio();
+    setBackgroundMusicDucked(true);
     let candidateIndex = 0;
     const tryNext = () => {
         if (candidateIndex >= candidates.length) {
             console.warn("MP3 tidak ditemukan untuk:", itemOrName?.name || itemOrName, candidates);
+            setBackgroundMusicDucked(false);
             audio.onerror = null;
             return;
         }
@@ -5585,6 +5642,10 @@ function playWorkshopAudio(itemOrName){
         });
     };
     audio.onerror = tryNext;
+    audio.addEventListener("ended", function restoreWorkshopBacksound(){
+        setBackgroundMusicDucked(false);
+        audio.removeEventListener("ended", restoreWorkshopBacksound);
+    });
     tryNext();
     return audio;
 }
@@ -8535,6 +8596,28 @@ document.addEventListener("fullscreenchange",function(){
         }
 
     };
+})();
+</script>
+
+
+<style>
+#k3QuizModal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;background:rgba(1,7,12,.84);backdrop-filter:blur(10px)}
+#k3QuizModal.show{display:flex}.k3-panel{width:min(760px,92vw);max-height:90vh;overflow:auto;padding:28px;border-radius:22px;background:linear-gradient(145deg,#102f3c,#06121d);border:1px solid #35d9ff66;box-shadow:0 25px 80px #000b}.k3-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid #8beeff22;padding-bottom:16px;margin-bottom:18px}.k3-header h2{margin:0 0 6px;color:#effcff}.k3-header p{margin:0;color:#a7bac5;font-size:13px}.k3-close{border:1px solid #8beeff44;border-radius:9px;background:#102c3b;color:#fff;font-size:20px;padding:4px 11px;cursor:pointer}.k3-progress{display:flex;justify-content:space-between;color:#8beeff;font-size:12px;font-weight:700;margin-bottom:14px}.k3-question{margin:0 0 18px;color:#fff;font-size:19px;line-height:1.45}.k3-option{display:block;width:100%;margin:10px 0;padding:14px 16px;text-align:left;border-radius:11px;border:1px solid #8beeff44;background:#102c3b;color:#effcff;cursor:pointer;line-height:1.45;transition:.2s}.k3-option:hover{border-color:#35d9ff;background:#145065;transform:translateX(3px)}.k3-option.k3-wrong{background:#7f1d1d;border-color:#f87171;color:#fee2e2}.k3-option.k3-correct{background:#166534;border-color:#4ade80;color:#dcfce7}.k3-feedback{min-height:24px;margin-top:14px;font-size:13px;font-weight:700;color:#fca5a5}.k3-result{text-align:center;padding:18px 0 4px}.k3-result h2{color:#effcff;margin:0 0 16px}.k3-result-score{font-size:31px;font-weight:900;color:#35d9ff;margin:12px 0}.k3-result p{color:#a7bac5;line-height:1.6}.k3-result button{margin-top:14px;padding:12px 18px;border:1px solid #8beeff66;border-radius:10px;background:#145065;color:#fff;cursor:pointer}
+</style>
+<div id="k3QuizModal" role="dialog" aria-modal="true" aria-labelledby="k3QuizTitle"><div class="k3-panel"><div class="k3-header"><div><h2 id="k3QuizTitle">KUIS K3 BENGKEL</h2><p>Pilih salah satu jawaban yang paling benar!</p></div><button class="k3-close" type="button" onclick="closeK3Quiz()" aria-label="Tutup kuis">×</button></div><div id="k3QuizBody"></div></div></div>
+<script>
+(function(){
+const k3Questions=[
+{question:"Apa tindakan yang paling tepat untuk mencegah bahaya fatal sengatan listrik dan risiko jatuh?",answers:["Siswa wajib mematuhi prosedur K3 untuk mencegah bahaya fatal sengatan listrik dan risiko jatuh.","K3 tidak penting untuk dipelajari terutama siswa SMK.","Kita sebaiknya tidak mengikuti pelajaran K3."],correct:0},
+{question:"Apa yang harus dilakukan sebelum menyentuh komponen inverter dan panel surya?",answers:["APD bukan hal yang wajib untuk dipakai saat praktik.","Selalu gunakan APD kelistrikan lengkap sebelum menyentuh komponen inverter dan panel surya.","Cukup gunakan sandal agar lebih mudah bergerak."],correct:1},
+{question:"Mengapa 5R perlu diterapkan di area bengkel?",answers:["5R dipelajari supaya mendapatkan nilai yang bagus, bukan untuk dipraktikkan.","Area kerja boleh dibiarkan berantakan selama pekerjaan cepat selesai.","Terapkan 5R di bengkel agar area kerja terhindar dari risiko korsleting dan insiden tersandung."],correct:2},
+{question:"Apa manfaat menjaga kebersihan peralatan secara disiplin?",answers:["Menjaga kebersihan bukan tanggung jawab siswa.","Kedisiplinan menjaga kebersihan peralatan akan membentuk mental teknisi profesional yang aman dan efisien.","Peralatan yang kotor tetap aman digunakan tanpa pemeriksaan."],correct:1}
+];
+let current=0,score=0,wrong=0,locked=false;const modal=()=>document.getElementById("k3QuizModal"),body=()=>document.getElementById("k3QuizBody");
+function render(){const q=k3Questions[current];body().innerHTML=`<div class="k3-progress"><span>Soal ${current+1} dari ${k3Questions.length}</span><span>Skor: ${score}</span></div><h3 class="k3-question">${q.question}</h3><div class="k3-options"></div><div class="k3-feedback" aria-live="polite">Pilih salah satu jawaban yang benar!</div>`;const wrap=body().querySelector(".k3-options");q.answers.forEach((answer,index)=>{const b=document.createElement("button");b.type="button";b.className="k3-option";b.textContent=answer;b.onclick=()=>answerQuestion(index,b);wrap.appendChild(b);});}
+function answerQuestion(index,button){if(locked)return;const q=k3Questions[current];if(index!==q.correct){wrong++;button.classList.add("k3-wrong");body().querySelector(".k3-feedback").textContent="Salah. Silakan pilih jawaban lain sampai benar.";return;}locked=true;score++;button.classList.add("k3-correct");const f=body().querySelector(".k3-feedback");f.style.color="#86efac";f.textContent="Benar! Bersiap ke soal berikutnya...";setTimeout(()=>{current++;locked=false;if(current>=k3Questions.length)showResult();else render();},800);}
+function showResult(){body().innerHTML=`<div class="k3-result"><h2>Your result</h2><div class="k3-result-score">${score} / ${k3Questions.length}</div><p>Wrong answers: ${wrong}<br>Progress: ${k3Questions.length}/${k3Questions.length}</p><p>${score===4?"Excellent! Kamu memahami prosedur K3 dengan sangat baik.":score>=2?"Sudah lumayan, tapi perlu belajar lagi.":"Ayo pelajari kembali materi K3 agar lebih aman saat praktik."}</p><button type="button" onclick="closeK3Quiz()">Selesai</button></div>`;}
+window.openK3Quiz=function(){current=0;score=0;wrong=0;locked=false;modal().classList.add("show");render();};window.closeK3Quiz=function(){modal().classList.remove("show");locked=false;};
 })();
 </script>
 
