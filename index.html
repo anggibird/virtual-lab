@@ -1769,11 +1769,10 @@
 
 </head>
 <body>
-<div id="introVideoScreen" aria-label="Video pembuka">
+<div id="introVideoScreen" class="is-hidden" aria-label="Video pembuka">
     <div id="introVideoWrapper">
         <video
             id="introVideo"
-            autoplay
             playsinline
             preload="auto"
             aria-label="Video pembuka workshop">
@@ -2622,31 +2621,10 @@
             }
         }
 
-        // Coba langsung autoplay dengan suara
+        // Video baru dimulai setelah tombol START pada splash screen diklik.
         introVideo.muted = false;
         introVideo.volume = 1;
-
-        introVideo.play()
-        .then(function(){
-            isMuted = false;
-            updateSoundButton();
-        })
-        .catch(function(error){
-            console.log("Autoplay dengan suara menunggu interaksi pengguna:", error);
-            // Jangan mematikan suara. Browser akan mengizinkan audio saat pengguna menekan tombol.
-            introVideo.muted = false;
-            introVideo.volume = 1;
-            isMuted = false;
-            updateSoundButton();
-        });
-
-        document.addEventListener("pointerdown", function(){
-            if (introVideo.paused && !introClosed) {
-                introVideo.muted = false;
-                introVideo.volume = 1;
-                introVideo.play().catch(function(err){ console.log("Video belum dapat diputar:", err); });
-            }
-        }, { once: true });
+        updateSoundButton();
 
         // Tombol speaker
         soundButton.addEventListener("click", function(){
@@ -2678,10 +2656,11 @@
     </script>
 
 </div>
-<div id="welcomeScreen">
+<div id="welcomeScreen" class="is-visible">
 
     <audio
         id="welcomeAudio"
+        autoplay
         preload="auto">
         <source src="./assets/audio-tombol-start.mpeg" type="audio/mpeg">
     </audio>
@@ -2689,7 +2668,7 @@
     <button
         id="startButton"
         type="button"
-        onclick="enterLab()"
+        onclick="startIntroVideo()"
         aria-label="Mulai Eksplorasi">
     </button>
 
@@ -2698,6 +2677,46 @@
 <script>
 const welcomeScreen = document.getElementById("welcomeScreen");
 const welcomeAudio = document.getElementById("welcomeAudio");
+
+// Coba putar audio splash otomatis saat halaman pertama kali dibuka.
+if (welcomeAudio) {
+    welcomeAudio.autoplay = true;
+    welcomeAudio.muted = false;
+    welcomeAudio.volume = 1;
+    welcomeAudio.play().catch(function(error){
+        console.warn("Autoplay audio splash diblokir browser:", error);
+    });
+}
+
+window.startIntroVideo = function(){
+    const welcome = document.getElementById("welcomeScreen");
+    const introScreen = document.getElementById("introVideoScreen");
+    const introVideo = document.getElementById("introVideo");
+
+    if (!welcome || !introScreen || !introVideo) return;
+
+    // Putar suara tombol START dari splash screen.
+    if (welcomeAudio) {
+        welcomeAudio.pause();
+        welcomeAudio.currentTime = 0;
+        welcomeAudio.muted = false;
+        welcomeAudio.volume = 1;
+        welcomeAudio.play().catch(function(error){
+            console.warn("Audio tombol START tidak dapat diputar:", error);
+        });
+    }
+
+    welcome.classList.remove("is-visible");
+    welcome.style.display = "none";
+    introScreen.style.display = "flex";
+    introScreen.classList.remove("is-hidden");
+    introVideo.currentTime = 0;
+    introVideo.muted = false;
+    introVideo.volume = 1;
+    introVideo.play().catch(function(error){
+        console.warn("Video menunggu interaksi pengguna:", error);
+    });
+};
 
 async function showWelcomeScreen(playAudio = true) {
 
@@ -3149,58 +3168,22 @@ async function showWelcomeScreen(playAudio = true) {
 
 
     // ==========================================
-    // VIDEO SELESAI / SKIP
+    // VIDEO SELESAI / SKIP -> MASUK WORKSHOP
     // ==========================================
 
-    function showWelcomeScreen(){
-
+    function finishIntro(){
         if(introClosed) return;
-
         introClosed = true;
 
-        // Stop video
         introVideo.pause();
-
-        // Sembunyikan video
         introScreen.classList.add("is-hidden");
+        introScreen.style.display = "none";
 
-        // Tampilkan welcome
-        welcomeScreen.classList.add("is-visible");
-
-
-        // ==========================================
-        // JALANKAN AUDIO WELCOME
-        // ==========================================
-
-        welcomeAudio.currentTime = 0;
-        welcomeAudio.volume = 1;
-        welcomeAudio.muted = false;
-
-        welcomeAudio.play()
-            .then(function(){
-
-                console.log("✅ Audio welcome berjalan");
-
-            })
-            .catch(function(error){
-
-                console.log(
-                    "⚠️ Audio autoplay diblokir browser:",
-                    error
-                );
-
-            });
-
-
-        // Hilangkan video setelah animasi
-        setTimeout(() => {
-
-            introScreen.style.display = "none";
-
-        }, 750);
-
+        // Masuk ke ruang workshop seperti alur sebelumnya.
+        if (typeof window.enterLab === "function") {
+            window.enterLab();
+        }
     }
-
 
     // ==========================================
     // VIDEO SELESAI
@@ -3208,7 +3191,7 @@ async function showWelcomeScreen(playAudio = true) {
 
     introVideo.addEventListener(
         "ended",
-        showWelcomeScreen
+        finishIntro
     );
 
 
@@ -3218,7 +3201,7 @@ async function showWelcomeScreen(playAudio = true) {
 
     introVideo.addEventListener(
         "error",
-        showWelcomeScreen
+        finishIntro
     );
 
 
@@ -3228,22 +3211,9 @@ async function showWelcomeScreen(playAudio = true) {
 
     skipButton.addEventListener(
         "click",
-        showWelcomeScreen
+        finishIntro
     );
 
-
-    // ==========================================
-    // AUTOPLAY VIDEO
-    // ==========================================
-
-    introVideo.play().catch(function(error){
-
-        console.log(
-            "Autoplay menunggu interaksi pengguna:",
-            error
-        );
-
-    });
 
 })();
 </script>
@@ -4278,7 +4248,7 @@ const objects = [
         height: 16
     },
     {
-        name: "Tire Changer Machine",
+        name: "Tier Changer",
         images: {
             top:   "assets/tire_changer_tampak_atas.png",
             front: "assets/tire_changer_tampak_depan.png",
@@ -4295,7 +4265,7 @@ const objects = [
         height: 15
     },
     {
-        name: "Wheel Balancer Machine",
+        name: "Wheel Balancer",
         images: {
             top:   "assets/wheel_balancer_tampak_atas.png",
             front: "assets/wheel_balancer_tampak_depan.png",
@@ -4334,7 +4304,7 @@ const objects = [
         height: 15
     },
     {
-        name: "Battery Charger Machine",
+        name: "Battery changer",
 
         images: {
             top:   "assets/battery_charger_tampak_atas.png",
@@ -4349,7 +4319,7 @@ const objects = [
         height: 15
     },
     {
-        name: "Press Hydraulic Machine",
+        name: "Press Hydraulic",
 
         images: {
             top:   "assets/hydraulic_pressure_machine_tampak_atas.png",
@@ -4367,7 +4337,7 @@ const objects = [
         height: 25
     },
     {
-        name: "ATF Changer Machine",
+        name: "ATF Changer",
 
         images: {
             top:   "assets/ac_recycle_tampak_atas.png",
@@ -4379,7 +4349,7 @@ const objects = [
         // DEFAULT
         defaultView: "front",
         description: "mengganti mata potong atau perkakas secara otomatis tanpa bantuan manual dari operator",
-        x: 90,
+        x: 92,
         y: 65,
         width: 4,
         height: 16
@@ -4393,7 +4363,7 @@ const objects = [
         height: 15
     },
     {
-        name: "Air Compressor Machine",
+        name: "Air Compressor",
         images: {
             top:   "assets/air_compressor_tampak_atas.png",
             front: "assets/air_compressor_tampak_depan.png",
@@ -4410,7 +4380,7 @@ const objects = [
         height: 10
     },
     {
-        name: "Dongkrak Hidrolik Jack",
+        name: "Dongkrak Hydrolik Jack",
         images: {
             top:   "assets/hydraulic_jack_tampak_atas.png",
             front: "assets/hydraulic_jack_tampak_depan.png",
@@ -4429,7 +4399,7 @@ const objects = [
         height: 6
     },    
     {
-        name: "Air Hose Reels",
+        name: "Air Hose Reeis",
 
         images: {
             top:   "assets/air_hose_reel_tampak_atas.png",
@@ -4450,7 +4420,7 @@ const objects = [
         height: 6
     },
     {
-        name: "Air Hose Reels",
+        name: "Air Hose Reeis",
 
         images: {
             top:   "assets/air_hose_reel_tampak_atas.png",
@@ -4468,7 +4438,7 @@ const objects = [
         height: 6
     },
     {
-        name: "Air Hose Reels",
+        name: "Air Hose Reeis",
 
         images: {
             top:   "assets/air_hose_reel_tampak_atas.png",
@@ -4486,7 +4456,7 @@ const objects = [
         height: 6
     },
     {
-        name: "Air Hose Reels",
+        name: "Air Hose Reeis",
 
         images: {
             top:   "assets/air_hose_reel_tampak_atas.png",
@@ -5563,22 +5533,13 @@ function showObjectsSequentially() {
 let workshopAudio = null;
 let currentAudioFile = "";
 
-const AUDIO_FILE_OVERRIDES = {
-    "ac recycle machine": "AC-recycle machine.mp3",
-    "Air Compressor Machine": "Air Compressor Machine.mp3"
-};
-
 function audioFileCandidates(itemOrName){
     const item = typeof itemOrName === "string" ? { name: itemOrName } : (itemOrName || {});
     const name = String(item.name || "").trim();
-    const override = item.audioFile || AUDIO_FILE_OVERRIDES[name.toLowerCase()];
-    const candidates = [];
-    if (override) candidates.push(override);
-    if (name) {
-        candidates.push(name + ".mp3");
-        candidates.push(name.replace(/\s+/g, "-") + ".mp3");
-    }
-    return [...new Set(candidates)].map(file => "./assets/voice-workshop/" + file);
+
+    // Nama MP3 harus sama persis dengan nilai `name`.
+    // Contoh: name "Engine Crane" -> "./assets/Engine Crane.mp3"
+    return name ? ["./assets/voice-workshop/" + name + ".mp3"] : [];
 }
 
 function ensureWorkshopAudio(){
