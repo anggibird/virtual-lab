@@ -673,14 +673,14 @@
         inset:0;
         width:100%;
         height:100%;
-        background-image:linear-gradient(135deg,rgba(3,10,20,.25),rgba(0,217,255,.12)),url("assets/Scene2-splashscreen.jpg");
+        background-image:linear-gradient(135deg,rgba(3,10,20,.25),rgba(0,217,255,.12)),url("assets/Scene2-splashscreen.png");
         background-image:
             linear-gradient(
                 135deg,
                 rgba(3,10,20,.25),
                 rgba(0,217,255,.12)
             ),
-            url("assets/Scene2-splashscreen.jpg");
+            url("assets/Scene2-splashscreen.png");
 
         background-size: contain;
         background-position: center;
@@ -2701,6 +2701,7 @@ const backgroundMusic = document.getElementById("backgroundMusic");
 
 const BACKSOUND_NORMAL_VOLUME = 0.1;
 const BACKSOUND_DUCKED_VOLUME = 0.01;
+const FOREGROUND_AUDIO_VOLUME = 0.1;
 
 function setBackgroundMusicDucked(isDucked){
     if (!backgroundMusic) return;
@@ -2725,7 +2726,16 @@ document.addEventListener("pointerdown", playBackgroundMusic, { once: true });
 if (welcomeAudio) {
     welcomeAudio.autoplay = true;
     welcomeAudio.muted = false;
-    welcomeAudio.volume = 1;
+    welcomeAudio.volume = FOREGROUND_AUDIO_VOLUME;
+    welcomeAudio.addEventListener("play", function(){
+        setBackgroundMusicDucked(true);
+    });
+    welcomeAudio.addEventListener("pause", function(){
+        setBackgroundMusicDucked(false);
+    });
+    welcomeAudio.addEventListener("ended", function(){
+        setBackgroundMusicDucked(false);
+    });
     welcomeAudio.play().catch(function(error){
         console.warn("Autoplay audio splash diblokir browser:", error);
     });
@@ -2755,6 +2765,7 @@ window.startIntroVideo = function(){
     introScreen.classList.remove("is-hidden");
     introVideo.currentTime = 0;
     introVideo.muted = false;
+    introVideo.volume = FOREGROUND_AUDIO_VOLUME;
     introVideo.volume = 1;
     introVideo.play().catch(function(error){
         console.warn("Video menunggu interaksi pengguna:", error);
@@ -2774,6 +2785,7 @@ async function showWelcomeScreen(playAudio = true) {
 
         welcomeAudio.pause();
         welcomeAudio.currentTime = 0;
+        welcomeAudio.volume = FOREGROUND_AUDIO_VOLUME;
         welcomeAudio.volume = 1;
         welcomeAudio.muted = false;
 
@@ -2900,8 +2912,8 @@ async function showWelcomeScreen(playAudio = true) {
             id="homeButton"
             type="button"
             onclick="goHome()">
-            <span class="home-icon">⌂</span>
-            <span>HOME</span>
+            <span class="home-icon">×</span>
+            <span>KELUAR</span>
         </button>
     </div>
 
@@ -2929,9 +2941,9 @@ async function showWelcomeScreen(playAudio = true) {
             </div>
 
             <div class="menu-content">
-                <div class="menu-name">PENGENALAN</div>
+                <div class="menu-name">IDENTIFIKASI</div>
                 <div class="menu-description">
-                    Kenali fungsi dan penggunaan alat
+                    Kenali nama dan fungsi alat
                 </div>
             </div>
 
@@ -2951,9 +2963,9 @@ async function showWelcomeScreen(playAudio = true) {
             </div>
 
             <div class="menu-content">
-                <div class="menu-name">IDENTIFIKASI</div>
+                <div class="menu-name">EKSPLORASI</div>
                 <div class="menu-description">
-                    Identifikasi nama dan jenis alat
+                    Ekplorasi nama dan fungsi alat
                 </div>
             </div>
 
@@ -3023,7 +3035,7 @@ async function showWelcomeScreen(playAudio = true) {
             <div class="menu-number">05</div>
             <div class="menu-icon">🦺</div>
             <div class="menu-content">
-                <div class="menu-name">KUIS K3</div>
+                <div class="menu-name">REFLEKSI</div>
                 <div class="menu-description">Keselamatan dan kesehatan kerja bengkel</div>
             </div>
             <div class="menu-arrow">›</div>
@@ -4625,11 +4637,16 @@ document
         );
 
     });
+
+
+
+
 /* =========================================
    START QUIZ
 ========================================= */
 
 window.startQuiz = function(){
+    stopWorkshopEducation();
 
     if(!objects || !objects.length){
         alert("Object quiz belum tersedia.");
@@ -4732,11 +4749,12 @@ function stopWorkshopEducation() {
 
 window.startPengenalan = function(){
 
+    stopWorkshopEducation();
+    
     if (workshopInteractionDisabled) {
         return;
     }
 
-    stopWorkshopEducation();
 
     showSceneInstruction(
         "PENGENALAN ALAT",
@@ -5893,19 +5911,22 @@ function initWorkshopObjectHotspots() {
             borderRadius: "8px",
             background: "transparent",
             cursor: "pointer",
-            pointerEvents: "auto"
+            pointerEvents: "auto",
+            outline: "none"
         });
 
         hotspot.addEventListener("mouseenter", () => {
-            //hotspot.style.borderColor = "rgba(128, 128, 128, 0.3)";
-            //hotspot.style.borderColor = "red";
+            hotspot.style.border = "2px solid rgba(53, 194, 255, 0.95)";
+            hotspot.style.boxShadow = "0 0 0 2px rgba(53, 194, 255, 0.25)";
         });
 
         hotspot.addEventListener("mouseleave", () => {
-            hotspot.style.borderColor = "transparent";
+            hotspot.style.border = "2px solid transparent";
+            hotspot.style.boxShadow = "none";
         });
 
         hotspot.addEventListener("click", (event) => {
+            hotspot.blur();
 
             /* =========================================
                WORKSHOP SUDAH DINONAKTIFKAN
@@ -6141,12 +6162,20 @@ function initWorkshopObjectHotspots() {
                 });
             }
 
-            caption.style.left = `${captionX}px`;
             caption.style.top = `${captionY}px`;
             caption.style.display = "block";
 
+            const captionRect = caption.getBoundingClientRect();
+            const captionHalfWidth = captionRect.width / 2;
+            const captionMargin = 16;
+            const safeCaptionX = Math.min(
+                window.innerWidth - captionHalfWidth - captionMargin,
+                Math.max(captionHalfWidth + captionMargin, captionX)
+            );
+            caption.style.left = `${safeCaptionX}px`;
+
             const lineEndX =
-                captionX - sceneRect.left;
+                safeCaptionX - sceneRect.left;
 
             const lineEndY =
                 captionY - sceneRect.top;
@@ -8545,7 +8574,7 @@ document.addEventListener("fullscreenchange",function(){
     };
 };
 
-  window.openMCQ=function(){ index=0; score=0; locked=false; mcqStartedAt=Date.now(); questions=makeQuestions(); document.getElementById('mcqModal').classList.add('show'); renderMCQ(); };
+  window.openMCQ=function(){ stopWorkshopEducation(); index=0; score=0; locked=false; mcqStartedAt=Date.now(); questions=makeQuestions(); document.getElementById('mcqModal').classList.add('show'); renderMCQ(); };
   window.closeMCQ=function(){ document.getElementById('mcqModal').classList.remove('show'); locked=false; };
   function renderMCQ(){
     const item=questions[index]; document.getElementById('mcqProgress').textContent='Pertanyaan '+(index+1)+' dari '+questions.length+' • Skor '+score;
@@ -8561,11 +8590,20 @@ document.addEventListener("fullscreenchange",function(){
 
     window.goHome = function(){
 
+        // KELUAR menghapus hasil REFLEKSI yang tersimpan di browser.
+        try {
+            localStorage.removeItem("k3ReflectionResult");
+            sessionStorage.removeItem("k3ReflectionResult");
+        } catch (error) {
+            console.warn("Data REFLEKSI tidak dapat dihapus:", error);
+        }
+        if (window.clearReflectionResult) window.clearReflectionResult();
+
         if (typeof stopWorkshopAudio === "function") stopWorkshopAudio();
 
         // Tutup semua modal
         document
-            .querySelectorAll('.modal,.mcq-modal,#quizModal,#quizSummaryModal')
+            .querySelectorAll('.modal,.mcq-modal,#quizModal,#quizSummaryModal,#k3QuizModal')
             .forEach(m => m.classList.remove('show'));
 
         // Sembunyikan trolley actions
@@ -8602,22 +8640,27 @@ document.addEventListener("fullscreenchange",function(){
 
 <style>
 #k3QuizModal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;background:rgba(1,7,12,.84);backdrop-filter:blur(10px)}
-#k3QuizModal.show{display:flex}.k3-panel{width:min(760px,92vw);max-height:90vh;overflow:auto;padding:28px;border-radius:22px;background:linear-gradient(145deg,#102f3c,#06121d);border:1px solid #35d9ff66;box-shadow:0 25px 80px #000b}.k3-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid #8beeff22;padding-bottom:16px;margin-bottom:18px}.k3-header h2{margin:0 0 6px;color:#effcff}.k3-header p{margin:0;color:#a7bac5;font-size:13px}.k3-close{border:1px solid #8beeff44;border-radius:9px;background:#102c3b;color:#fff;font-size:20px;padding:4px 11px;cursor:pointer}.k3-progress{display:flex;justify-content:space-between;color:#8beeff;font-size:12px;font-weight:700;margin-bottom:14px}.k3-question{margin:0 0 18px;color:#fff;font-size:19px;line-height:1.45}.k3-option{display:block;width:100%;margin:10px 0;padding:14px 16px;text-align:left;border-radius:11px;border:1px solid #8beeff44;background:#102c3b;color:#effcff;cursor:pointer;line-height:1.45;transition:.2s}.k3-option:hover{border-color:#35d9ff;background:#145065;transform:translateX(3px)}.k3-option.k3-wrong{background:#7f1d1d;border-color:#f87171;color:#fee2e2}.k3-option.k3-correct{background:#166534;border-color:#4ade80;color:#dcfce7}.k3-feedback{min-height:24px;margin-top:14px;font-size:13px;font-weight:700;color:#fca5a5}.k3-result{text-align:center;padding:18px 0 4px}.k3-result h2{color:#effcff;margin:0 0 16px}.k3-result-score{font-size:31px;font-weight:900;color:#35d9ff;margin:12px 0}.k3-result p{color:#a7bac5;line-height:1.6}.k3-result button{margin-top:14px;padding:12px 18px;border:1px solid #8beeff66;border-radius:10px;background:#145065;color:#fff;cursor:pointer}
+#k3QuizModal.show{display:flex}.k3-review{margin-top:18px}.k3-review-question{margin:18px 0 8px;color:#effcff;font-size:15px;line-height:1.45}.k3-review-option{display:flex;align-items:flex-start;gap:10px;width:100%;margin:7px 0;padding:11px 13px;text-align:left;border-radius:10px;border:1px solid #8beeff22;background:#0b2230;color:#a7bac5;line-height:1.4}.k3-review-option.correct{border-color:#4ade80;background:#14532d;color:#dcfce7}.k3-check{margin-left:auto;color:#4ade80;font-size:20px;font-weight:900;line-height:1}.k3-completed{margin:0 0 14px;padding:13px 15px;border:1px solid #4ade8066;border-radius:12px;background:rgba(20,83,45,.3)}.k3-completed-title{display:flex;justify-content:space-between;color:#86efac;font-weight:800;font-size:13px;margin-bottom:8px}.k3-panel{width:min(760px,92vw);max-height:90vh;overflow:auto;padding:28px;border-radius:22px;background:linear-gradient(145deg,#102f3c,#06121d);border:1px solid #35d9ff66;box-shadow:0 25px 80px #000b}.k3-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid #8beeff22;padding-bottom:16px;margin-bottom:18px}.k3-header h2{margin:0 0 6px;color:#effcff}.k3-header p{margin:0;color:#a7bac5;font-size:13px}.k3-close{border:1px solid #8beeff44;border-radius:9px;background:#102c3b;color:#fff;font-size:20px;padding:4px 11px;cursor:pointer}.k3-progress{display:flex;justify-content:space-between;color:#8beeff;font-size:12px;font-weight:700;margin-bottom:14px}.k3-question{margin:0 0 18px;color:#fff;font-size:19px;line-height:1.45}.k3-option{display:block;width:100%;margin:10px 0;padding:14px 16px;text-align:left;border-radius:11px;border:1px solid #8beeff44;background:#102c3b;color:#effcff;cursor:pointer;line-height:1.45;transition:.2s}.k3-option:hover{border-color:#35d9ff;background:#145065;transform:translateX(3px)}.k3-option.k3-wrong{background:#7f1d1d;border-color:#f87171;color:#fee2e2}.k3-option.k3-correct{background:#166534;border-color:#4ade80;color:#dcfce7}.k3-feedback{min-height:24px;margin-top:14px;font-size:13px;font-weight:700;color:#fca5a5}.k3-result{text-align:center;padding:18px 0 4px}.k3-result h2{color:#effcff;margin:0 0 16px}.k3-result-score{font-size:31px;font-weight:900;color:#35d9ff;margin:12px 0}.k3-result p{color:#a7bac5;line-height:1.6}.k3-result button{margin-top:14px;padding:12px 18px;border:1px solid #8beeff66;border-radius:10px;background:#145065;color:#fff;cursor:pointer}
 </style>
-<div id="k3QuizModal" role="dialog" aria-modal="true" aria-labelledby="k3QuizTitle"><div class="k3-panel"><div class="k3-header"><div><h2 id="k3QuizTitle">KUIS K3 BENGKEL</h2><p>Pilih salah satu jawaban yang paling benar!</p></div><button class="k3-close" type="button" onclick="closeK3Quiz()" aria-label="Tutup kuis">×</button></div><div id="k3QuizBody"></div></div></div>
+<div id="k3QuizModal" role="dialog" aria-modal="true" aria-labelledby="k3QuizTitle"><div class="k3-panel"><div class="k3-header"><div><h2 id="k3QuizTitle">REFLEKSI</h2><p>Pilih salah satu jawaban yang paling benar!</p></div><button class="k3-close" type="button" onclick="closeK3Quiz()" aria-label="Tutup kuis">×</button></div><div id="k3QuizBody"></div></div></div>
 <script>
 (function(){
+const K3_STORAGE_KEY="k3ReflectionResult";
 const k3Questions=[
 {question:"Apa tindakan yang paling tepat untuk mencegah bahaya fatal sengatan listrik dan risiko jatuh?",answers:["Siswa wajib mematuhi prosedur K3 untuk mencegah bahaya fatal sengatan listrik dan risiko jatuh.","K3 tidak penting untuk dipelajari terutama siswa SMK.","Kita sebaiknya tidak mengikuti pelajaran K3."],correct:0},
 {question:"Apa yang harus dilakukan sebelum menyentuh komponen inverter dan panel surya?",answers:["APD bukan hal yang wajib untuk dipakai saat praktik.","Selalu gunakan APD kelistrikan lengkap sebelum menyentuh komponen inverter dan panel surya.","Cukup gunakan sandal agar lebih mudah bergerak."],correct:1},
 {question:"Mengapa 5R perlu diterapkan di area bengkel?",answers:["5R dipelajari supaya mendapatkan nilai yang bagus, bukan untuk dipraktikkan.","Area kerja boleh dibiarkan berantakan selama pekerjaan cepat selesai.","Terapkan 5R di bengkel agar area kerja terhindar dari risiko korsleting dan insiden tersandung."],correct:2},
 {question:"Apa manfaat menjaga kebersihan peralatan secara disiplin?",answers:["Menjaga kebersihan bukan tanggung jawab siswa.","Kedisiplinan menjaga kebersihan peralatan akan membentuk mental teknisi profesional yang aman dan efisien.","Peralatan yang kotor tetap aman digunakan tanpa pemeriksaan."],correct:1}
 ];
-let current=0,score=0,wrong=0,locked=false;const modal=()=>document.getElementById("k3QuizModal"),body=()=>document.getElementById("k3QuizBody");
-function render(){const q=k3Questions[current];body().innerHTML=`<div class="k3-progress"><span>Soal ${current+1} dari ${k3Questions.length}</span><span>Skor: ${score}</span></div><h3 class="k3-question">${q.question}</h3><div class="k3-options"></div><div class="k3-feedback" aria-live="polite">Pilih salah satu jawaban yang benar!</div>`;const wrap=body().querySelector(".k3-options");q.answers.forEach((answer,index)=>{const b=document.createElement("button");b.type="button";b.className="k3-option";b.textContent=answer;b.onclick=()=>answerQuestion(index,b);wrap.appendChild(b);});}
-function answerQuestion(index,button){if(locked)return;const q=k3Questions[current];if(index!==q.correct){wrong++;button.classList.add("k3-wrong");body().querySelector(".k3-feedback").textContent="Salah. Silakan pilih jawaban lain sampai benar.";return;}locked=true;score++;button.classList.add("k3-correct");const f=body().querySelector(".k3-feedback");f.style.color="#86efac";f.textContent="Benar! Bersiap ke soal berikutnya...";setTimeout(()=>{current++;locked=false;if(current>=k3Questions.length)showResult();else render();},800);}
-function showResult(){body().innerHTML=`<div class="k3-result"><h2>Your result</h2><div class="k3-result-score">${score} / ${k3Questions.length}</div><p>Wrong answers: ${wrong}<br>Progress: ${k3Questions.length}/${k3Questions.length}</p><p>${score===4?"Excellent! Kamu memahami prosedur K3 dengan sangat baik.":score>=2?"Sudah lumayan, tapi perlu belajar lagi.":"Ayo pelajari kembali materi K3 agar lebih aman saat praktik."}</p><button type="button" onclick="closeK3Quiz()">Selesai</button></div>`;}
-window.openK3Quiz=function(){current=0;score=0;wrong=0;locked=false;modal().classList.add("show");render();};window.closeK3Quiz=function(){modal().classList.remove("show");locked=false;};
+let current=0,wrong=0,locked=false,completedCards=[];const modal=()=>document.getElementById("k3QuizModal"),body=()=>document.getElementById("k3QuizBody");
+function saveResult(){try{localStorage.setItem(K3_STORAGE_KEY,JSON.stringify({completed:true,completedCount:k3Questions.length,wrong,answers:k3Questions.map(q=>q.correct)}));}catch(error){console.warn("Hasil REFLEKSI tidak dapat disimpan:",error);}}
+function readResult(){try{const value=JSON.parse(localStorage.getItem(K3_STORAGE_KEY)||"null");return value&&value.completed?value:null;}catch(error){return null;}}
+function completedCard(q,questionNumber){return `<div class="k3-completed"><div class="k3-completed-title">Soal ${questionNumber} selesai <span class="k3-check">✓</span></div><div class="k3-review-question">${q.question}</div><div class="k3-review-option correct"><span>${q.answers[q.correct]}</span><span class="k3-check" aria-label="Jawaban benar">✓</span></div></div>`;}
+function render(){const q=k3Questions[current];body().innerHTML=completedCards.join("")+`<div class="k3-progress"><span>Soal ${current+1} dari ${k3Questions.length}</span><span>Selesai: ${current}/${k3Questions.length}</span></div><h3 class="k3-question">${q.question}</h3><div class="k3-options"></div><div class="k3-feedback" aria-live="polite">Pilih salah satu jawaban yang benar!</div>`;const wrap=body().querySelector(".k3-options");q.answers.forEach((answer,index)=>{const b=document.createElement("button");b.type="button";b.className="k3-option";b.textContent=answer;b.onclick=()=>answerQuestion(index,b);wrap.appendChild(b);});}
+function answerQuestion(index,button){if(locked)return;const q=k3Questions[current];if(index!==q.correct){wrong++;button.classList.add("k3-wrong");body().querySelector(".k3-feedback").textContent="Salah. Silakan pilih jawaban lain sampai benar.";return;}locked=true;button.classList.add("k3-correct");const feedback=body().querySelector(".k3-feedback");feedback.style.color="#86efac";feedback.textContent="Benar!";completedCards.push(completedCard(q,current+1));setTimeout(()=>{current++;locked=false;if(current>=k3Questions.length)showResult();else render();},700);}
+function showResult(){saveResult();body().innerHTML=completedCards.join("")+`<div class="k3-result"><h2>REFLEKSI SELESAI</h2><p>Soal dikerjakan: ${k3Questions.length} dari ${k3Questions.length}</p><p>Semua soal sudah dijawab benar.</p><button type="button" onclick="closeK3Quiz()">Selesai</button></div>`;}
+function renderSavedResult(saved){let html=`<div class="k3-result"><h2>REFLEKSI TERSIMPAN</h2><p>Soal dikerjakan: ${saved.completedCount||k3Questions.length} dari ${k3Questions.length}</p></div>`;k3Questions.forEach((q,i)=>{html+=completedCard(q,i+1);});html+=`<div class="k3-result"><button type="button" onclick="restartK3Quiz()">Ulangi Kuis</button><button type="button" onclick="closeK3Quiz()">Tutup</button></div>`;body().innerHTML=html;}
+window.openK3Quiz=function(){ stopWorkshopEducation(); const saved=readResult();modal().classList.add("show");if(saved){renderSavedResult(saved);return;}current=0;wrong=0;locked=false;completedCards=[];render();};window.restartK3Quiz=function(){try{localStorage.removeItem(K3_STORAGE_KEY);}catch(error){}current=0;wrong=0;locked=false;completedCards=[];render();};window.clearReflectionResult=function(){try{localStorage.removeItem(K3_STORAGE_KEY);sessionStorage.removeItem(K3_STORAGE_KEY);}catch(error){}};window.closeK3Quiz=function(){modal().classList.remove("show");locked=false;};
 })();
 </script>
 
