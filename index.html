@@ -1833,24 +1833,38 @@
 
 }
 
+
 /* =========================================
-   INITIAL LOADING
+   INITIAL LOADING / OVERLAY
 ========================================= */
+
 #initialLoadingScreen {
     position: fixed;
     inset: 0;
     z-index: 9999999;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     background: #02060b;
     color: #fff;
 
-    margin-top: 50px;
+    cursor: pointer;
 }
+
+/* Setelah loading 100%, background menjadi transparan */
 #initialLoadingScreen.loading-complete {
     background: transparent;
 }
+
+/* Setelah diklik, overlay hilang */
+#initialLoadingScreen.is-hidden {
+    display: none !important;
+}
+
+
+/* Isi loading 0% sampai 100% */
 .initial-loading-content {
     width: min(420px, 80vw);
     text-align: center;
@@ -1876,9 +1890,9 @@
 .loading-bar {
     width: 100%;
     height: 10px;
-    border-radius: 20px;
     overflow: hidden;
-    background: rgba(255,255,255,.12);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.12);
 }
 
 #initialLoadingProgress {
@@ -1886,7 +1900,7 @@
     height: 100%;
     border-radius: 20px;
     background: #35d9ff;
-    transition: width .15s ease;
+    transition: width 0.15s ease;
 }
 
 #initialLoadingPercent {
@@ -1895,21 +1909,16 @@
     font-weight: 800;
 }
 
-#initialLoadingScreen.is-hidden {
-    display: none;
-}
 
-
-
+/* Tombol/petunjuk muncul setelah 100% */
 #loadingContinueButton {
     position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 
-    /* Posisi di atas tombol START orange */
-    left: 75.4%;
-    top: 56.4%;
-    transform: translate(-30%, -30%);
-    width: clamp(215px, 21vw, 210px);
-    height: clamp(70px, 11vh, 70px);
+    width: clamp(220px, 25vw, 480px);
+    height: clamp(80px, 16vh, 170px);
 
     display: none;
 
@@ -1921,7 +1930,7 @@
     border: 0;
     border-radius: 18px;
 
-    background: transparent;
+    background: rgba(231, 231, 231, 0.04);
     color: #fff;
 
     cursor: pointer;
@@ -1931,7 +1940,6 @@
     font-weight: 700;
     letter-spacing: 1px;
 
-
     animation: continuePulse 1.3s infinite;
 }
 
@@ -1940,12 +1948,8 @@
     line-height: 1;
 }
 
-#loadingContinueButton.show {
-    display: flex;
-}
-
 #loadingContinueButton:hover {
-    display: none;
+    background: rgba(255, 152, 0, 0.2);
 }
 
 @keyframes continuePulse {
@@ -1960,9 +1964,12 @@
     }
 }
 
+
+/* Class umum */
 .is-hidden {
     display: none !important;
 }
+
 
 
 </style>
@@ -1997,13 +2004,9 @@
 
         <button
             id="loadingContinueButton"
-            type="button"
-            style="display: none;"
-            aria-label="Klik untuk mulai">
-
-            <img
-                src="assets/button-start.png"
-                alt="Klik untuk mulai">
+            type="button">
+            <span class="continue-icon">👆</span>
+            <span>Klik di mana saja untuk mulai</span>
         </button>
 
     </div>
@@ -2955,7 +2958,25 @@ function playBackgroundMusic(){
 }
 
 playBackgroundMusic();
+document.addEventListener("pointerdown", function(){
+    playBackgroundMusic();
 
+    // Browser desktop sering memblokir autoplay audio bersuara.
+    // Gesture pertama pengguna menjadi fallback untuk audio welcome.
+    if (
+        welcomeAudio &&
+        welcomeScreen &&
+        welcomeScreen.classList.contains("is-visible") &&
+        welcomeAudio.paused &&
+        welcomeAudio.currentTime === 0
+    ) {
+        welcomeAudio.muted = false;
+        welcomeAudio.volume = FOREGROUND_AUDIO_VOLUME;
+        welcomeAudio.play().catch(function(error){
+            console.warn("Audio welcome menunggu interaksi pengguna:", error);
+        });
+    }
+}, { once: true, capture: true });
 
 // Coba putar audio splash otomatis saat halaman pertama kali dibuka.
 if (welcomeAudio) {
@@ -9006,31 +9027,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const welcomeScreen =
         document.getElementById("welcomeScreen");
 
-const loadingContinueButton =
-    document.getElementById("loadingContinueButton");
-
-loadingContinueButton.addEventListener("click", function () {
-    const welcomeAudio =
-        document.getElementById("welcomeAudio");
-
-    if (welcomeAudio) {
-        welcomeAudio.muted = false;
-        welcomeAudio.volume = 1;
-        welcomeAudio.currentTime = 0;
-
-        welcomeAudio.play().catch(function (error) {
-            console.warn("Audio gagal diputar:", error);
-        });
-    }
-
-    document
-        .getElementById("initialLoadingScreen")
-        .style.display = "none";
-
-    document
-        .getElementById("welcomeScreen")
-        .style.display = "flex";
-});
 
     function setLoading(percent) {
         percent = Math.round(percent);
@@ -9146,28 +9142,35 @@ loadingContinueButton.addEventListener("click", function () {
     }
 
 
-    function continueToWelcome() {
-        // Sembunyikan layar loading
-        if (loadingScreen) {
-            loadingScreen.classList.add("is-hidden");
+    function continueToWelcome(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
         }
+
+        // Sembunyikan tombol/petunjuk
+        continueButton.style.display = "none";
+
+        // Hilangkan overlay transparan
+        loadingScreen.classList.add("is-hidden");
 
         // Tampilkan welcome screen
-        if (welcomeScreen) {
-            welcomeScreen.classList.remove("is-hidden");
-            welcomeScreen.classList.add("is-visible");
-        }
+        welcomeScreen.classList.remove("is-hidden");
+        welcomeScreen.classList.add("is-visible");
     }
 
 
-    // Tombol hanya aktif setelah loading 100%
-    if (continueButton) {
-        continueButton.addEventListener(
+        // Klik kiri atau sentuhan
+        loadingScreen.addEventListener(
             "click",
-            continueToWelcome,
-            { once: true }
+            continueToWelcome
         );
-    }
+
+        // Klik kanan
+        loadingScreen.addEventListener(
+            "contextmenu",
+            continueToWelcome
+        );
 
 
     startInitialLoading();
