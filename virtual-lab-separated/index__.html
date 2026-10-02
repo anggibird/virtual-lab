@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0">
+<title>3D Tool Trolley Workshop</title>
+<link rel="stylesheet" href="assets/css/style.css">
+
+</head>
+<body>
+<div id="introVideoScreen" class="is-hidden" aria-label="Video pembuka">
+    <div id="introVideoWrapper">
+        <video
+            id="introVideo"
+            playsinline
+            preload="auto"
+            aria-label="Video pembuka workshop">
+            <source src="assets/Scene1-video.mp4" type="video/mp4">
+        </video>
+        
+        <button
+            id="soundButton"
+            type="button"
+            aria-label="Aktifkan suara"
+            title="Aktifkan suara">
+            🔊
+        </button>
+        <button
+            id="skipIntroButton"
+            type="button">
+            Lewati Video
+        </button>
+    </div>
+
+    
+
+    <script src="assets/js/intro-sound.js"></script>
+
+</div>
+<div id="welcomeScreen" class="is-visible">
+
+    <audio
+        id="welcomeAudio"
+        autoplay
+        preload="auto">
+        <source src="./assets/audio-tombol-start.mpeg" type="audio/mpeg">
+    </audio>
+
+    <button
+        id="startButton"
+        type="button"
+        onclick="startIntroVideo()"
+        aria-label="Mulai Eksplorasi">
+    </button>
+
+</div>
+
+<audio id="backgroundMusic" autoplay loop preload="auto" aria-label="Backsound workshop">
+    <source src="./assets/backsound.mp3" type="audio/mpeg">
+</audio>
+
+<script src="assets/js/welcome-audio.js"></script>
+
+<div id="app">
+<div id="trolleyActions">
+    <button
+        class="trolley-action close"
+        onclick="closeTrolley()">
+        ✕ CLOSE
+    </button>
+
+</div>
+
+<!-- =========================================
+     HEADER
+========================================= -->
+<div class="header">
+    <div>
+    <h1>
+            AUTO TOOLS VIRTUAL LAB
+        </h1>
+            <p>
+            Media Pembelajaran Lab Maya Otomotif
+        </p>
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     CONTROLS
+========================================= -->
+
+<div class="controls">
+    <button
+        class="control"
+        onclick="rotateLeft()">
+        <span class="icon">↶</span>
+        KIRI
+    </button>
+    <button
+        class="control"
+        onclick="rotateRight()">
+        <span class="icon">↷</span>
+        KANAN
+    </button>
+
+    <button
+        class="control"
+        onclick="rotateUp()">
+                <span class="icon">↟</span>
+                ATAS
+            </button>
+
+    <button
+        class="control"
+        onclick="rotateDown()">
+                <span class="icon">↡</span>
+                BAWAH
+            </button>
+
+    <button
+        class="control"
+        onclick="zoomIn()">
+                <span class="icon">＋</span>
+                ZOOM
+            </button>
+
+    <button
+        class="control"
+        onclick="zoomOut()">
+                <span class="icon">－</span>
+                ZOOM
+            </button>
+
+    <button
+        class="control"
+        onclick="resetCamera()">
+                <span class="icon">⟳</span>
+                RESET
+            </button>
+        </div>
+        
+<!-- =========================================
+     INFO
+========================================= -->
+
+<button
+    id="mobileMenuToggle"
+    type="button"
+    aria-label="Buka menu"
+    aria-expanded="false">
+    <span aria-hidden="true">☰</span>
+    <span class="mobile-menu-label">MENU</span>
+</button>
+
+<div class="info" id="mainInfoMenu">
+
+    <!-- HOME -->
+    <div class="menu-home">
+        <button
+            class="home-button"
+            id="homeButton"
+            type="button"
+            onclick="goHome()">
+            <span class="home-icon">×</span>
+            <span>KELUAR</span>
+        </button>
+    </div>
+
+
+    <!-- MATERI -->
+    <div class="menu-section">
+
+        <div class="section-heading">
+            <div class="section-line"></div>
+            <div>
+                <div class="section-kicker">PEMBELAJARAN</div>
+                <div class="section-title">MATERI INTERAKTIF</div>
+            </div>
+        </div>
+
+
+        <button
+            class="menu-card"
+            onclick="startPengenalan()">
+
+            <div class="menu-number">01</div>
+
+            <div class="menu-icon">
+                📖
+            </div>
+
+            <div class="menu-content">
+                <div class="menu-name">IDENTIFIKASI</div>
+                <div class="menu-description">
+                    Kenali nama dan fungsi alat
+                </div>
+            </div>
+
+            <div class="menu-arrow">›</div>
+
+        </button>
+
+
+        <button
+            class="menu-card"
+            onclick="startIdentifikasi()">
+
+            <div class="menu-number">02</div>
+
+            <div class="menu-icon">
+                🔍
+            </div>
+
+            <div class="menu-content">
+                <div class="menu-name">EKSPLORASI</div>
+                <div class="menu-description">
+                    Ekplorasi nama dan fungsi alat
+                </div>
+            </div>
+
+            <div class="menu-arrow">›</div>
+
+        </button>
+
+    </div>
+
+
+    <!-- KUIS -->
+    <div class="menu-section quiz-section">
+
+        <div class="section-heading">
+            <div class="section-line"></div>
+            <div>
+                <div class="section-kicker">EVALUASI</div>
+                <div class="section-title">KUIS INTERAKTIF</div>
+            </div>
+        </div>
+
+
+        <button
+            class="menu-card quiz-card"
+            onclick="startQuiz()">
+
+            <div class="menu-number">03</div>
+
+            <div class="menu-icon">
+                🎯
+            </div>
+
+            <div class="menu-content">
+                <div class="menu-name">COCOKKAN ALAT</div>
+                <div class="menu-description">
+                    Cocokkan alat dengan penggunaannya
+                </div>
+            </div>
+
+            <div class="menu-arrow">›</div>
+
+        </button>
+
+
+        <button
+            class="menu-card quiz-card"
+            onclick="openMCQ()">
+
+            <div class="menu-number">04</div>
+
+            <div class="menu-icon">
+                📝
+            </div>
+
+            <div class="menu-content">
+                <div class="menu-name">PILIHAN GANDA</div>
+                <div class="menu-description">
+                    Uji pemahaman materi workshop
+                </div>
+            </div>
+
+            <div class="menu-arrow">›</div>
+
+        </button>
+
+        <button class="menu-card quiz-card" onclick="openK3Quiz()">
+            <div class="menu-number">05</div>
+            <div class="menu-icon">🦺</div>
+            <div class="menu-content">
+                <div class="menu-name">REFLEKSI</div>
+                <div class="menu-description">Keselamatan dan kesehatan kerja bengkel</div>
+            </div>
+            <div class="menu-arrow">›</div>
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     SCENE
+========================================= -->
+<div id="scene"></div>
+<div class="bottom">
+    Klik salah satu Rak untuk membuka
+    dan melihat peralatan
+
+</div>
+
+<!-- =========================================
+     RACK MODAL
+========================================= -->
+<div
+    class="modal"
+    id="rackModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <h2 id="rackTitle">
+                        Rak 1
+                    </h2>
+                    <div class="modal-subtitle">
+                        Hand Tools
+                    </div>
+                </div>
+                <button
+                    class="close"
+                    onclick="closeRack()">
+                    ×
+                </button>
+            </div>
+            <div
+                class="tools-grid"
+                id="toolsGrid">
+            </div>
+        </div>
+    </div>
+
+<!-- =========================================
+     TOOL DETAIL MODAL
+========================================= -->
+
+<div class="modal" id="toolModal">
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <button
+                class="back"
+                onclick="backToRack()">
+                ← Kembali
+            </button>
+
+            <!---<button
+                class="close"
+                onclick="closeTool()">
+                ×
+            </button>-->
+        </div>
+
+        <div class="detail-layout">
+
+            <div>
+                <div id="toolViewer"></div>
+
+                <div class="viewer-buttons">
+                    <button onclick="toolRotateLeft()">
+                        ↶ Putar
+                    </button>
+
+                    <button onclick="toolRotateRight()">
+                        ↷ Putar
+                    </button>
+
+                    <button onclick="toolZoomIn()">
+                        ＋ Zoom
+                    </button>
+
+                    <button onclick="toolZoomOut()">
+                        − Zoom
+                    </button>
+
+                    <button onclick="toolReset()">
+                        ⟳
+                    </button>
+                </div>
+            </div>
+
+            <div class="detail-info">
+
+                <!-- Tetap dipertahankan agar JS lama tidak error -->
+                <span
+                    class="category"
+                    id="detailCategory"
+                    style="display:none;">
+                </span>
+
+                <h2 id="detailName"></h2>
+
+                <p
+                    class="description"
+                    id="detailDescription">
+                </p>
+
+                <!-- Tetap dipertahankan agar JS lama tidak error -->
+                <div
+                    class="specs"
+                    style="display:none;">
+
+                    <div class="spec">
+                        <span>Merk</span>
+                        <span id="detailBrand"></span>
+                    </div>
+
+                    <div class="spec">
+                        <span>Kode</span>
+                        <span id="detailCode"></span>
+                    </div>
+
+                    <div class="spec">
+                        <span>Ukuran</span>
+                        <span id="detailSize"></span>
+                    </div>
+
+                    <div class="spec">
+                        <span>Berat</span>
+                        <span id="detailWeight"></span>
+                    </div>
+
+                    <div class="spec">
+                        <span>Material</span>
+                        <span id="detailMaterial"></span>
+                    </div>
+
+                </div>
+
+                <div class="use">
+                    <strong>
+                        🔧 Fungsi
+                    </strong>
+
+                    <p id="detailUse"></p>
+                </div>
+
+                <!-- Voice tetap dipertahankan -->
+                <div
+                    class="voice-controls"
+                    style="display:none;">
+
+                    <button
+                        id="voiceButton"
+                        type="button"
+                        onclick="toggleToolVoice()">
+                        🔊 Dengarkan Penjelasan
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="stopToolVoice()">
+                        ⏹ Berhenti
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Intro video controller -->
+<script src="assets/js/intro-controller.js"></script>
+
+<!-- THREE -->
+
+<script type="importmap">
+
+{
+    "imports":{
+
+        "three":
+        "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+
+        "three/addons/":
+        "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+
+    }
+}
+
+</script>
+
+
+<script type="module" src="assets/js/workshop.js"></script>
+<!-- =========================================
+     QUIZ MODAL
+========================================= -->
+
+<div id="mcqModal" class="mcq-modal" role="dialog" aria-modal="true">
+  <div class="mcq-panel">
+    <button class="mcq-close" onclick="closeMCQ()">×</button>
+    <h2>Soal Pilihan Ganda</h2>
+    <p id="mcqProgress">Pertanyaan 1 dari 20</p>
+    <div id="mcqImageWrap" class="mcq-image-wrap" hidden>
+      <img id="mcqImage" alt="Gambar alat untuk soal">
+    </div>
+    <h3 id="mcqQuestion"></h3>
+    <div id="mcqOptions"></div>
+    <p id="mcqFeedback" aria-live="polite"></p>
+  </div>
+</div>
+<div id="quizModal">
+
+    <div class="quiz-panel">
+
+        <div class="quiz-header">
+
+            <div>
+                <div class="quiz-label">
+                    INTERACTIVE QUIZ
+                </div>
+
+                <h2>
+                    Kenali Peralatan Workshop
+                </h2>
+
+                <p>
+                    Drag nama objek ke posisi objek yang benar.
+                </p>
+            </div>
+
+            <button
+                class="quiz-close"
+                onclick="closeQuiz()">
+                ×
+            </button>
+
+        </div>
+
+        <div class="quiz-content">
+
+            <!-- WORKSHOP -->
+            <div
+                id="quizScene"
+                class="quiz-scene">
+
+                <div
+                    id="quizObjectsLayer">
+                </div>
+
+                <div
+                    id="quizFeedback">
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="quiz-sidebar">
+
+                <div class="quiz-score">
+
+                    <div class="score-title">
+                        SKOR KUIS
+                    </div>
+
+                    <div class="score-stats">
+
+                        <div class="score-item correct">
+                            <span class="score-icon">✓</span>
+                            <div>
+                                <small>BENAR</small>
+                                <strong id="quizCorrect">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="score-item wrong">
+                            <span class="score-icon">✕</span>
+                            <div>
+                                <small>SALAH</small>
+                                <strong id="quizWrong">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="score-item total">
+                            <span class="score-icon">#</span>
+                            <div>
+                                <small>TOTAL</small>
+                                <strong id="quizTotal">0</strong>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="quiz-progress">
+                    <span id="quizProgress">
+                        0 / 16
+                    </span>
+                </div>
+
+                <div class="quiz-instruction">
+
+                    <strong>
+                        🎯 Tugas
+                    </strong>
+
+                    <p>
+                        Silahkan geser 20 nama alat di bawah ini!
+                        lalu letakan pada gambar alat yang sesuai
+                    </p>
+
+                </div>
+
+                <div
+                    id="quizItems"
+                    class="quiz-items">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal" id="quizSummaryModal">
+
+    <div class="summary-box">
+
+        <div class="summary-emotion">
+            🎉
+        </div>
+
+        <h2>KUIS SELESAI!</h2>
+
+        <p>
+            Berikut hasil kuis kamu
+        </p>
+
+        <div class="summary-stats">
+
+            <div>
+                <small>BENAR</small>
+                <strong id="summaryCorrect">0</strong>
+            </div>
+
+            <div>
+                <small>SALAH</small>
+                <strong id="summaryWrong">0</strong>
+            </div>
+
+            <div>
+                <small>TOTAL</small>
+                <strong id="summaryTotal">0</strong>
+            </div>
+
+            <div>
+                <small>NILAI</small>
+                <strong id="summaryPercentage">0%</strong>
+            </div>
+
+        </div>
+
+        <!-- RATING -->
+        <div class="quiz-rating">
+
+            <div class="rating-title">
+                Bagaimana pengalaman quiz kamu?
+            </div>
+
+            <div class="rating-emojis">
+
+                <button
+                    type="button"
+                    class="rating-emoji"
+                    data-rating="1">
+                    😡
+                </button>
+
+                <button
+                    type="button"
+                    class="rating-emoji"
+                    data-rating="2">
+                    😕
+                </button>
+
+                <button
+                    type="button"
+                    class="rating-emoji"
+                    data-rating="3">
+                    😐
+                </button>
+
+                <button
+                    type="button"
+                    class="rating-emoji"
+                    data-rating="4">
+                    🙂
+                </button>
+
+                <button
+                    type="button"
+                    class="rating-emoji"
+                    data-rating="5">
+                    😍
+                </button>
+
+            </div>
+
+            <div id="ratingDropZone" class="rating-drop-zone">
+                Seret emoticon pilihanmu ke sini
+            </div>
+
+            <div
+                id="ratingText"
+                class="rating-text">
+                Pilih salah satu
+            </div>
+
+        </div>
+
+        <button
+            id="saveQuizResult"
+            type="button"
+            onclick="saveQuizResult()">
+            SIMPAN HASIL
+        </button>
+
+    </div>
+
+</div>
+<div id="quizFeedback" class="quiz-feedback"></div>
+<button
+    id="fullscreenButton"
+    type="button"
+    onclick="toggleFullscreen()">
+    ⛶ FULLSCREEN
+</button>
+
+<script src="assets/js/ui-controls.js"></script>
+
+<script src="assets/js/mcq-quiz.js"></script>
+
+
+
+<div id="k3QuizModal" role="dialog" aria-modal="true" aria-labelledby="k3QuizTitle"><div class="k3-panel"><div class="k3-header"><div><h2 id="k3QuizTitle">REFLEKSI</h2><p>Pilih salah satu jawaban yang paling benar!</p></div><button class="k3-close" type="button" onclick="closeK3Quiz()" aria-label="Tutup kuis">×</button></div><div id="k3QuizBody"></div></div></div>
+<script src="assets/js/k3-reflection.js"></script>
+
+</body>
+</html>
+
+

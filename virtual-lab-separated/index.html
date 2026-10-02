@@ -1586,7 +1586,7 @@
     .mcq-close { float:right; padding:8px 12px; border:0; border-radius:8px; background:#242b33; color:#fff; cursor:pointer; }
 
 
-    css
+    ```css
 /* =========================================
    COMPACT WORKSHOP MENU
 ========================================= */
@@ -1832,188 +1832,12 @@
     }
 
 }
-
-/* =========================================
-   INITIAL LOADING
-========================================= */
-#initialLoadingScreen {
-    position: fixed;
-    inset: 0;
-    z-index: 9999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #02060b;
-    color: #fff;
-
-    margin-top: 50px;
-}
-#initialLoadingScreen.loading-complete {
-    background: transparent;
-}
-.initial-loading-content {
-    width: min(420px, 80vw);
-    text-align: center;
-}
-
-.loading-logo {
-    font-size: 60px;
-    margin-bottom: 15px;
-}
-
-.loading-title {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 3px;
-}
-
-.loading-subtitle {
-    margin: 8px 0 22px;
-    color: #8ba5b5;
-    font-size: 12px;
-}
-
-.loading-bar {
-    width: 100%;
-    height: 10px;
-    border-radius: 20px;
-    overflow: hidden;
-    background: rgba(255,255,255,.12);
-}
-
-#initialLoadingProgress {
-    width: 0%;
-    height: 100%;
-    border-radius: 20px;
-    background: #35d9ff;
-    transition: width .15s ease;
-}
-
-#initialLoadingPercent {
-    margin-top: 10px;
-    font-size: 13px;
-    font-weight: 800;
-}
-
-#initialLoadingScreen.is-hidden {
-    display: none;
-}
-
-
-
-#loadingContinueButton {
-    position: absolute;
-
-    /* Posisi di atas tombol START orange */
-    left: 75.4%;
-    top: 56.4%;
-    transform: translate(-30%, -30%);
-    width: clamp(215px, 21vw, 210px);
-    height: clamp(70px, 11vh, 70px);
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 8px;
-
-    border: 0;
-    border-radius: 18px;
-
-    background: transparent;
-    color: #fff;
-
-    cursor: pointer;
-    z-index: 10;
-
-    font-size: clamp(12px, 1.4vw, 24px);
-    font-weight: 700;
-    letter-spacing: 1px;
-
-
-    animation: continuePulse 1.3s infinite;
-}
-
-#loadingContinueButton .continue-icon {
-    font-size: clamp(24px, 2.5vw, 42px);
-    line-height: 1;
-}
-
-#loadingContinueButton.show {
-    display: flex;
-}
-
-#loadingContinueButton:hover {
-    display: none;
-}
-
-@keyframes continuePulse {
-    0%, 100% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-
-    50% {
-        opacity: 0.75;
-        transform: translate(-50%, -50%) scale(1.04);
-    }
-}
-
-.is-hidden {
-    display: none !important;
-}
-
+```
 
 </style>
 
 </head>
 <body>
-<body>
-
-<!-- INITIAL LOADING -->
-<div id="initialLoadingScreen">
-    <div class="initial-loading-content">
-
-        <div id="hideinitial">
-            <div class="loading-logo">🔧</div>
-
-            <div class="loading-title">
-                VIRTUAL LAB
-            </div>
-
-            <div class="loading-subtitle">
-                Mempersiapkan Workshop...
-            </div>
-
-            <div class="loading-bar">
-                <div id="initialLoadingProgress"></div>
-            </div>
-
-            <div id="initialLoadingPercent">
-                0%
-            </div>
-        </div>
-
-        <button
-            id="loadingContinueButton"
-            type="button"
-            style="display: none;"
-            aria-label="Klik untuk mulai">
-
-            <img
-                src="assets/button-start.png"
-                alt="Klik untuk mulai">
-        </button>
-
-    </div>
-</div>
-
-
-
-
-
-<!-- INTRO VIDEO -->
 <div id="introVideoScreen" class="is-hidden" aria-label="Video pembuka">
     <div id="introVideoWrapper">
         <video
@@ -2912,6 +2736,7 @@
 
     <audio
         id="welcomeAudio"
+        autoplay
         preload="auto">
         <source src="./assets/audio-tombol-start.mpeg" type="audio/mpeg">
     </audio>
@@ -2925,7 +2750,7 @@
 
 </div>
 
-<audio id="backgroundMusic" loop preload="auto" aria-label="Backsound workshop">
+<audio id="backgroundMusic" autoplay loop preload="auto" aria-label="Backsound workshop">
     <source src="./assets/backsound.mp3" type="audio/mpeg">
 </audio>
 
@@ -2955,11 +2780,29 @@ function playBackgroundMusic(){
 }
 
 playBackgroundMusic();
+document.addEventListener("pointerdown", function(){
+    playBackgroundMusic();
 
+    // Browser desktop sering memblokir autoplay audio bersuara.
+    // Gesture pertama pengguna menjadi fallback untuk audio welcome.
+    if (
+        welcomeAudio &&
+        welcomeScreen &&
+        welcomeScreen.classList.contains("is-visible") &&
+        welcomeAudio.paused &&
+        welcomeAudio.currentTime === 0
+    ) {
+        welcomeAudio.muted = false;
+        welcomeAudio.volume = FOREGROUND_AUDIO_VOLUME;
+        welcomeAudio.play().catch(function(error){
+            console.warn("Audio welcome menunggu interaksi pengguna:", error);
+        });
+    }
+}, { once: true, capture: true });
 
 // Coba putar audio splash otomatis saat halaman pertama kali dibuka.
 if (welcomeAudio) {
-    welcomeAudio.autoplay = false;
+    welcomeAudio.autoplay = true;
     welcomeAudio.muted = false;
     welcomeAudio.volume = FOREGROUND_AUDIO_VOLUME;
     welcomeAudio.addEventListener("play", function(){
@@ -3024,6 +2867,7 @@ async function showWelcomeScreen(playAudio = true) {
         welcomeAudio.volume = 1;
         welcomeAudio.muted = false;
 
+        await welcomeAudio.play();
 
         console.log("✅ AUDIO WELCOME BERHASIL DIPUTAR");
 
@@ -8977,203 +8821,8 @@ window.openK3Quiz=function(){ stopWorkshopEducation(); const saved=readResult();
 })();
 </script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const loadingScreen =
-        document.getElementById("initialLoadingScreen");
-
-    const hideInitial =
-        document.getElementById("hideinitial");
-
-    const loadingProgress =
-        document.getElementById("initialLoadingProgress");
-
-    const loadingPercent =
-        document.getElementById("initialLoadingPercent");
-
-    const continueButton =
-        document.getElementById("loadingContinueButton");
-
-    const introVideo =
-        document.getElementById("introVideo");
-
-    const welcomeAudio =
-        document.getElementById("welcomeAudio");
-
-    const backgroundMusic =
-        document.getElementById("backgroundMusic");
-
-    const welcomeScreen =
-        document.getElementById("welcomeScreen");
-
-const loadingContinueButton =
-    document.getElementById("loadingContinueButton");
-
-loadingContinueButton.addEventListener("click", function () {
-    const welcomeAudio =
-        document.getElementById("welcomeAudio");
-
-    if (welcomeAudio) {
-        welcomeAudio.muted = false;
-        welcomeAudio.volume = 1;
-        welcomeAudio.currentTime = 0;
-
-        welcomeAudio.play().catch(function (error) {
-            console.warn("Audio gagal diputar:", error);
-        });
-    }
-
-    document
-        .getElementById("initialLoadingScreen")
-        .style.display = "none";
-
-    document
-        .getElementById("welcomeScreen")
-        .style.display = "flex";
-});
-
-    function setLoading(percent) {
-        percent = Math.round(percent);
-
-        if (loadingProgress) {
-            loadingProgress.style.width =
-                percent + "%";
-        }
-
-        if (loadingPercent) {
-            loadingPercent.textContent =
-                percent + "%";
-        }
-    }
-
-
-    function preloadMedia(media) {
-        return new Promise(function (resolve) {
-            // Kalau elemen audio/video tidak ditemukan,
-            // anggap selesai agar loading tidak macet
-            if (!media) {
-                resolve();
-                return;
-            }
-
-            // Jika sudah siap
-            if (media.readyState >= 3) {
-                resolve();
-                return;
-            }
-
-            let finished = false;
-
-            function finish() {
-                if (finished) {
-                    return;
-                }
-
-                finished = true;
-
-                media.removeEventListener(
-                    "canplaythrough",
-                    finish
-                );
-
-                media.removeEventListener(
-                    "loadeddata",
-                    finish
-                );
-
-                media.removeEventListener(
-                    "error",
-                    finish
-                );
-
-                resolve();
-            }
-
-            media.addEventListener(
-                "canplaythrough",
-                finish
-            );
-
-            media.addEventListener(
-                "loadeddata",
-                finish
-            );
-
-            media.addEventListener(
-                "error",
-                finish
-            );
-
-            media.load();
-        });
-    }
-
-
-    async function startInitialLoading() {
-        setLoading(0);
-
-        const videoPromise =
-            preloadMedia(introVideo);
-
-        setLoading(30);
-
-        const audioPromise =
-            preloadMedia(welcomeAudio);
-
-        setLoading(60);
-
-        const musicPromise =
-            preloadMedia(backgroundMusic);
-
-        await Promise.all([
-            videoPromise,
-            audioPromise,
-            musicPromise
-        ]);
-
-        // Progress berhenti di 100%
-        setLoading(100);
-
-
-        // Hilangkan background #02060b
-        loadingScreen.classList.add("loading-complete");
-        // Sembunyikan isi loading
-        hideinitial.style.display = "none";
-
-        // Munculkan tombol
-        continueButton.style.display = "flex";
-
-    }
-
-
-    function continueToWelcome() {
-        // Sembunyikan layar loading
-        if (loadingScreen) {
-            loadingScreen.classList.add("is-hidden");
-        }
-
-        // Tampilkan welcome screen
-        if (welcomeScreen) {
-            welcomeScreen.classList.remove("is-hidden");
-            welcomeScreen.classList.add("is-visible");
-        }
-    }
-
-
-    // Tombol hanya aktif setelah loading 100%
-    if (continueButton) {
-        continueButton.addEventListener(
-            "click",
-            continueToWelcome,
-            { once: true }
-        );
-    }
-
-
-    startInitialLoading();
-});
-</script>
-
+</body>
+</html>
 
 <style>
 /* FINAL FULL FRAME: sama seperti gambar pada quiz */
@@ -9202,6 +8851,3 @@ loadingContinueButton.addEventListener("click", function () {
 #introVideo { object-fit: fill !important; }
 :fullscreen #scene, :-webkit-full-screen #scene { width: 100vw !important; height: 100vh !important; }
 </style>
-</body>
-</html>
-
