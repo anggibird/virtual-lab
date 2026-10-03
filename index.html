@@ -1971,40 +1971,7 @@
 }
 
 
-#startContinueButton {
-    display: flex;
-    position: absolute;
 
-    /* Posisi di atas tombol START orange */
-    left: 75.4%;
-    top: 57.9%;
-    transform: translate(-30%, -30%);
-    width: clamp(215px, 210vw, 250px);
-    height: clamp(90px, 110vh, 90px);
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 8px;
-
-    border: 0;
-    border-radius: 18px;
-
-    background: transparent;
-    color: #fff;
-
-    cursor: pointer;
-    z-index: 10;
-
-    font-size: clamp(12px, 1.4vw, 24px);
-    font-weight: 700;
-    letter-spacing: 1px;
-
-
-    animation: continuePulse 1.3s infinite;
-}
 </style>
 
 </head>
@@ -2041,17 +2008,7 @@
             <span class="continue-icon">👆</span>
             <span>Klik di mana saja untuk mulai</span>
         </button>
-
-        <button
-            id="startContinueButton"
-            type="button" 
-            aria-label="Klik untuk mulai">
-
-            <img
-                src="assets/button-start.png"
-                alt="Klik untuk mulai">
-        </button>
-
+        
     </div>
 </div>
 
@@ -9070,8 +9027,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const welcomeScreen =
         document.getElementById("welcomeScreen");
 
-const startContinueButton =
-    document.getElementById("startContinueButton");
 
     function setLoading(percent) {
         percent = Math.round(percent);
@@ -9184,13 +9139,10 @@ const startContinueButton =
         // Munculkan tombol
         continueButton.style.display = "flex";
 
-
-        startContinueButton.style.display = "none";
     }
 
 
     function continueToWelcome(event) {
-
         if (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -9199,8 +9151,9 @@ const startContinueButton =
         // Sembunyikan tombol/petunjuk
         continueButton.style.display = "none";
 
+        // Hilangkan overlay transparan
+        loadingScreen.classList.add("is-hidden");
 
-        startContinueButton.style.display = "flex";
         // Tampilkan welcome screen
         welcomeScreen.classList.remove("is-hidden");
         welcomeScreen.classList.add("is-visible");
@@ -9218,6 +9171,8 @@ const startContinueButton =
             "contextmenu",
             continueToWelcome
         );
+
+
     startInitialLoading();
 });
 </script>
